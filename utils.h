@@ -2,12 +2,14 @@
 #define UTILS_H
 
 #include <Arduino.h>
-//class timer{
-//    //private:
-//        
-//    public:
-//       Timer(); //costruttore
-//};
+class timer{
+    private:
+       unsigned long initialTime;
+    public:
+       timer(); //costruttore
+       void startTimer();
+       bool checkExpired(int t);
+};
 
 class output {
    public:

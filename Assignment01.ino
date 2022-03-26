@@ -1,4 +1,4 @@
-#include <TimerOne.h>
+P#include <TimerOne.h>
 #include <EnableInterrupt.h>
 #include <avr/sleep.h>
 
@@ -29,6 +29,7 @@
 #define DEFAULT_DIFFICULTY_TIME 1000
 #define DEFAULT_SPEED 100
 #define SLEEP_TIMER 10000
+
 int difficulty = 0;                 // related to the potentiometer, from 1 to 8
 int state = 3;                      // "gamestate", "programstate"
 int current = 0;                    // current LED
@@ -49,15 +50,12 @@ int buttons[4];
 int score = 0;
 bool buttonPressed = false;
 output out;
+timer timer1;
+
 // a reset function called on game over
 void gameOver() {
   out.printGameOver(score);
   //utils::output::printGameOverLCD(score);
-  /*
-  Serial.println("GAME OVER");
-  Serial.print("Final Score: ");
-  Serial.println(score);
-  */
   isGameStarted = false;
   score = 0;
   state = LED_MOVING;
@@ -88,10 +86,6 @@ void pressedButton() {
           score += 1;
           out.printNewPoint(score);
           //utils::output::printNewPointLCD(score);
-          /*
-          Serial.print("New point! Score: ");
-          Serial.println(score);
-          */
           state = LED_MOVING;
           t2 *= DIFFICULTY_SCALE;
           s *= SPEED_SCALE;
@@ -105,9 +99,6 @@ void pressedButton() {
 void sleepMode() {
   out.printNotte();
   //utils::output::printNotteLCD();
-  /*
-  Serial.println("Notte");
-  */
   for(int i= 0; i < 4; i++) {
     enableInterrupt(buttons[i], wakeUp, RISING);
   }
@@ -121,10 +112,6 @@ void sleepMode() {
 void wakeUp() {
   out.printWelcomeAndDifficulty();
   //utils::output::printWelcomeAndDifficulty();
-  /*
-  Serial.println("Welcome to the Catch the Bouncing Led Ball Game. Press Key T1 to Start");
-  Serial.println("Set difficulty level");
-  */
   sleep_disable();
   timeStamp = millis();
   enableInterrupt(BUTTON_T1, startGame, RISING);
@@ -133,27 +120,20 @@ void startGame() {
   if(millis() - timeStamp >= BOUNCING_TIME_OUT) {
     out.printGo();
     //utils::output::printGoLCD();
-    /*
-    Serial.println("GO!");
-    */
     for(int i= 0; i < 4; i++) {
       enableInterrupt(buttons[i], pressedButton, RISING);
     }
     digitalWrite(LED_PIN_RED, LOW);
     isGameStarted = true;
     setDifficultyTime(difficulty);
-    startGameTime = millis();
-    
+    //startGameTime = millis();
+    timer1.startTimer();
   }
 }
 void setup() {
   Serial.begin(9600);
   out.printWelcomeAndDifficulty();
   //utils::output::printWelcomeAndDifficultyLCD();
-  /*
-  Serial.println("Welcome to the Catch the Bouncing Led Ball Game. Press Key T1 to Start");
-  Serial.println("Set difficulty level");
-  */
   leds[0] = LED_PIN_L1;
   leds[1] = LED_PIN_L2;
   leds[2] = LED_PIN_L3;
@@ -186,10 +166,6 @@ void loop() {
       difficulty = map(potValue, 0, 1023, 0, 7);
       out.printDifficulty(difficulty);
       //utils::output::printDifficultyLCD(difficulty);
-      /*
-      Serial.print("Difficulty set to: ");
-      Serial.println(difficulty +1 );
-      */
     }
     redFadeLevel += fadeAmount;
     analogWrite(LED_PIN_RED, redFadeLevel);
@@ -201,12 +177,12 @@ void loop() {
   }
   else {
     //siamo in partita
-    elapsedGameTime = millis();
-    if(elapsedGameTime - startGameTime >= t1) {
+    //elapsedGameTime = millis();
+    if(timer1.checkExpired(t1)) {
     // led fermo
       state = LED_IDLE;
       digitalWrite(leds[current], HIGH);
-      startGameTime = millis();
+      timer1.startTimer();
       delay(t2);
       
       if (!buttonPressed) {
