@@ -1,6 +1,12 @@
 #include <TimerOne.h>
 #include <EnableInterrupt.h>
 #include <avr/sleep.h>
+
+//#include <LiquidCrystal.h>
+#include "utils.h"
+
+//LiquidCrystal lcd(, , , , , );
+
 #define LED_PIN_RED 9
 #define LED_PIN_L4 10
 #define LED_PIN_L3 11
@@ -23,18 +29,18 @@
 #define DEFAULT_DIFFICULTY_TIME 1000
 #define DEFAULT_SPEED 100
 #define SLEEP_TIMER 10000
-int difficulty = 0;
-int state = 3;
-int current = 0;
-int counter = 1;
-int s = DEFAULT_SPEED;
-int t1; //random time for led to stop
-int t2 = DEFAULT_DIFFICULTY_TIME; //button stopped timer
-int t3 = SLEEP_TIMER; //sleep timer
-unsigned long sleepTimer;
-unsigned long startGameTime;
-unsigned long elapsedGameTime;
-unsigned long timeStamp;
+int difficulty = 0;                 // related to the potentiometer, from 1 to 8
+int state = 3;                      // "gamestate", "programstate"
+int current = 0;                    // current LED
+int counter = 1;                    // LED switcher
+int s = DEFAULT_SPEED;              // changing LED speed
+int t1;                             // random time for LED to stop
+int t2 = DEFAULT_DIFFICULTY_TIME;   // maximum time in which the button can be pressed
+int t3 = SLEEP_TIMER;               // sleep timer
+unsigned long sleepTimer;           // sleep timer counter
+unsigned long startGameTime;        // game started timestamp
+unsigned long elapsedGameTime;      // elapsed time during the last game loop
+unsigned long timeStamp;            //
 int fadeAmount = 5;
 int redFadeLevel = 0; 
 bool isGameStarted = false;
@@ -42,11 +48,16 @@ int leds[4];
 int buttons[4];
 int score = 0;
 bool buttonPressed = false;
-
+output out;
+// a reset function called on game over
 void gameOver() {
+  out.printGameOver(score);
+  //utils::output::printGameOverLCD(score);
+  /*
   Serial.println("GAME OVER");
   Serial.print("Final Score: ");
   Serial.println(score);
+  */
   isGameStarted = false;
   score = 0;
   state = LED_MOVING;
@@ -61,6 +72,7 @@ void gameOver() {
 }
 // difficulty level goes from 1 to 8
 void setDifficultyTime(int difficultyLevel) {
+  //use pow
   for (int i = 0; i < difficultyLevel; i++) {
     t2 *= DIFFICULTY_SCALE;
     s *= SPEED_SCALE;
@@ -74,8 +86,12 @@ void pressedButton() {
       if(digitalRead(buttons[i]) == HIGH) {      
         if(current == i) {
           score += 1;
+          out.printNewPoint(score);
+          //utils::output::printNewPointLCD(score);
+          /*
           Serial.print("New point! Score: ");
           Serial.println(score);
+          */
           state = LED_MOVING;
           t2 *= DIFFICULTY_SCALE;
           s *= SPEED_SCALE;
@@ -87,7 +103,11 @@ void pressedButton() {
   }
 }
 void sleepMode() {
+  out.printNotte();
+  //utils::output::printNotteLCD();
+  /*
   Serial.println("Notte");
+  */
   for(int i= 0; i < 4; i++) {
     enableInterrupt(buttons[i], wakeUp, RISING);
   }
@@ -99,15 +119,23 @@ void sleepMode() {
   sleep_mode();
 }
 void wakeUp() {
+  out.printWelcomeAndDifficulty();
+  //utils::output::printWelcomeAndDifficulty();
+  /*
   Serial.println("Welcome to the Catch the Bouncing Led Ball Game. Press Key T1 to Start");
   Serial.println("Set difficulty level");
+  */
   sleep_disable();
   timeStamp = millis();
   enableInterrupt(BUTTON_T1, startGame, RISING);
 }
 void startGame() {
   if(millis() - timeStamp >= BOUNCING_TIME_OUT) {
+    out.printGo();
+    //utils::output::printGoLCD();
+    /*
     Serial.println("GO!");
+    */
     for(int i= 0; i < 4; i++) {
       enableInterrupt(buttons[i], pressedButton, RISING);
     }
@@ -120,8 +148,12 @@ void startGame() {
 }
 void setup() {
   Serial.begin(9600);
+  out.printWelcomeAndDifficulty();
+  //utils::output::printWelcomeAndDifficultyLCD();
+  /*
   Serial.println("Welcome to the Catch the Bouncing Led Ball Game. Press Key T1 to Start");
   Serial.println("Set difficulty level");
+  */
   leds[0] = LED_PIN_L1;
   leds[1] = LED_PIN_L2;
   leds[2] = LED_PIN_L3;
@@ -139,7 +171,6 @@ void setup() {
   t1 = random(MIN_TIME, MAX_TIME);
 }
 void loop() {
-  // put your main code here, to run repeatedly:
   if (state == GAME_OVER) {
     gameOver();
     delay(GAME_OVER_TIME);
@@ -153,17 +184,23 @@ void loop() {
     int potValue = analogRead(POT_PIN);
     if (map(potValue, 0, 1023, 0, 7) != difficulty) {
       difficulty = map(potValue, 0, 1023, 0, 7);
+      out.printDifficulty(difficulty);
+      //utils::output::printDifficultyLCD(difficulty);
+      /*
       Serial.print("Difficulty set to: ");
       Serial.println(difficulty +1 );
+      */
     }
     redFadeLevel += fadeAmount;
     analogWrite(LED_PIN_RED, redFadeLevel);
     delay(50);
   } else if(!isGameStarted && (millis() - sleepTimer >= t3)) {
+    //ingresso in sleep
     sleepTimer = millis();
     sleepMode();
   }
   else {
+    //siamo in partita
     elapsedGameTime = millis();
     if(elapsedGameTime - startGameTime >= t1) {
     // led fermo
