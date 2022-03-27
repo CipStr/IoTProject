@@ -1,4 +1,4 @@
-P#include <TimerOne.h>
+#include <TimerOne.h>
 #include <EnableInterrupt.h>
 #include <avr/sleep.h>
 
@@ -24,12 +24,12 @@ P#include <TimerOne.h>
 #define LED_MOVING 1
 #define GAME_OVER 2
 #define DIFFICULTY_SCALE 0.9
-#define SPEED_SCALE 0.9
 #define GAME_OVER_TIME 10000
 #define DEFAULT_DIFFICULTY_TIME 1000
 #define DEFAULT_SPEED 100
 #define SLEEP_TIMER 10000
 
+float f = DIFFICULTY_SCALE;
 int difficulty = 0;                 // related to the potentiometer, from 1 to 8
 int state = 3;                      // "gamestate", "programstate"
 int current = 0;                    // current LED
@@ -37,11 +37,7 @@ int counter = 1;                    // LED switcher
 int s = DEFAULT_SPEED;              // changing LED speed
 int t1;                             // random time for LED to stop
 int t2 = DEFAULT_DIFFICULTY_TIME;   // maximum time in which the button can be pressed
-int t3 = SLEEP_TIMER;               // sleep timer
-unsigned long sleepTimer;           // sleep timer counter
-unsigned long startGameTime;        // game started timestamp
-unsigned long elapsedGameTime;      // elapsed time during the last game loop
-unsigned long timeStamp;            //
+int t3 = SLEEP_TIMER;     
 int fadeAmount = 5;
 int redFadeLevel = 0; 
 bool isGameStarted = false;
@@ -51,6 +47,8 @@ int score = 0;
 bool buttonPressed = false;
 output out;
 timer timer1;
+timer bouncingTimer;
+timer sleepTimer;
 
 // a reset function called on game over
 void gameOver() {
@@ -71,10 +69,7 @@ void gameOver() {
 // difficulty level goes from 1 to 8
 void setDifficultyTime(int difficultyLevel) {
   //use pow
-  for (int i = 0; i < difficultyLevel; i++) {
-    t2 *= DIFFICULTY_SCALE;
-    s *= SPEED_SCALE;
-  }
+  f -= 0.05 * difficultyLevel;
 }
 
 void pressedButton() {
@@ -87,8 +82,8 @@ void pressedButton() {
           out.printNewPoint(score);
           //utils::output::printNewPointLCD(score);
           state = LED_MOVING;
-          t2 *= DIFFICULTY_SCALE;
-          s *= SPEED_SCALE;
+          t2 *= f;
+          s *= f;
         } else {
          state = GAME_OVER;
         }
@@ -113,11 +108,11 @@ void wakeUp() {
   out.printWelcomeAndDifficulty();
   //utils::output::printWelcomeAndDifficulty();
   sleep_disable();
-  timeStamp = millis();
+  bouncingTimer.startTimer();
   enableInterrupt(BUTTON_T1, startGame, RISING);
 }
 void startGame() {
-  if(millis() - timeStamp >= BOUNCING_TIME_OUT) {
+  if(bouncingTimer.checkExpired(BOUNCING_TIME_OUT)) {
     out.printGo();
     //utils::output::printGoLCD();
     for(int i= 0; i < 4; i++) {
@@ -126,7 +121,6 @@ void startGame() {
     digitalWrite(LED_PIN_RED, LOW);
     isGameStarted = true;
     setDifficultyTime(difficulty);
-    //startGameTime = millis();
     timer1.startTimer();
   }
 }
@@ -146,7 +140,7 @@ void setup() {
     pinMode(leds[i], OUTPUT);
     pinMode(buttons[i], INPUT);
   }
-  sleepTimer = millis();
+  sleepTimer.startTimer();
   enableInterrupt(BUTTON_T1, startGame, CHANGE);
   t1 = random(MIN_TIME, MAX_TIME);
 }
@@ -154,9 +148,9 @@ void loop() {
   if (state == GAME_OVER) {
     gameOver();
     delay(GAME_OVER_TIME);
-    sleepTimer = millis();
+    sleepTimer.startTimer();
   }
-  else if(!isGameStarted && (millis() - sleepTimer <= t3)) {
+  else if(!isGameStarted && !sleepTimer.checkExpired(t3)) {
     // FADING RED LED, GAME IS NOT STARTED YET
     if((redFadeLevel >= 255 && fadeAmount > 0) || (redFadeLevel <= 0 && fadeAmount <0)) {
       fadeAmount = -fadeAmount;
@@ -170,14 +164,13 @@ void loop() {
     redFadeLevel += fadeAmount;
     analogWrite(LED_PIN_RED, redFadeLevel);
     delay(50);
-  } else if(!isGameStarted && (millis() - sleepTimer >= t3)) {
+  } else if(!isGameStarted && sleepTimer.checkExpired(t3)) {
     //ingresso in sleep
-    sleepTimer = millis();
+    sleepTimer.startTimer();
     sleepMode();
   }
   else {
     //siamo in partita
-    //elapsedGameTime = millis();
     if(timer1.checkExpired(t1)) {
     // led fermo
       state = LED_IDLE;
