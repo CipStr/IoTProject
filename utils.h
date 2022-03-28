@@ -19,7 +19,8 @@ class output {
        void printNotte();
        void printWelcomeAndDifficulty();
        void printGo();
-       void printDifficulty(int difficulty);ss   
+       void printDifficulty(int difficulty);
+       
 };
 
 #endif
