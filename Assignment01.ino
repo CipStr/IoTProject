@@ -2,10 +2,7 @@
 #include <EnableInterrupt.h>
 #include <avr/sleep.h>
 
-//#include <LiquidCrystal.h>
 #include "utils.h"
-
-//LiquidCrystal lcd(, , , , , );
 
 #define LED_PIN_RED 9
 #define LED_PIN_L4 10
@@ -53,7 +50,6 @@ timer sleepTimer;
 // a reset function called on game over
 void gameOver() {
   out.printGameOver(score);
-  //utils::output::printGameOverLCD(score);
   isGameStarted = false;
   score = 0;
   state = LED_MOVING;
@@ -68,7 +64,6 @@ void gameOver() {
 }
 // difficulty level goes from 1 to 8
 void setDifficultyTime(int difficultyLevel) {
-  //use pow
   f -= 0.05 * difficultyLevel;
 }
 
@@ -80,7 +75,6 @@ void pressedButton() {
         if(current == i) {
           score += 1;
           out.printNewPoint(score);
-          //utils::output::printNewPointLCD(score);
           state = LED_MOVING;
           t2 *= f;
           s *= f;
@@ -93,7 +87,6 @@ void pressedButton() {
 }
 void sleepMode() {
   out.printNotte();
-  //utils::output::printNotteLCD();
   for(int i= 0; i < 4; i++) {
     enableInterrupt(buttons[i], wakeUp, RISING);
   }
@@ -106,7 +99,6 @@ void sleepMode() {
 }
 void wakeUp() {
   out.printWelcomeAndDifficulty();
-  //utils::output::printWelcomeAndDifficulty();
   sleep_disable();
   bouncingTimer.startTimer();
   enableInterrupt(BUTTON_T1, startGame, RISING);
@@ -114,7 +106,6 @@ void wakeUp() {
 void startGame() {
   if(bouncingTimer.checkExpired(BOUNCING_TIME_OUT)) {
     out.printGo();
-    //utils::output::printGoLCD();
     for(int i= 0; i < 4; i++) {
       enableInterrupt(buttons[i], pressedButton, RISING);
     }
@@ -127,7 +118,6 @@ void startGame() {
 void setup() {
   Serial.begin(9600);
   out.printWelcomeAndDifficulty();
-  //utils::output::printWelcomeAndDifficultyLCD();
   leds[0] = LED_PIN_L1;
   leds[1] = LED_PIN_L2;
   leds[2] = LED_PIN_L3;
@@ -159,7 +149,6 @@ void loop() {
     if (map(potValue, 0, 1023, 0, 7) != difficulty) {
       difficulty = map(potValue, 0, 1023, 0, 7);
       out.printDifficulty(difficulty);
-      //utils::output::printDifficultyLCD(difficulty);
     }
     redFadeLevel += fadeAmount;
     analogWrite(LED_PIN_RED, redFadeLevel);
