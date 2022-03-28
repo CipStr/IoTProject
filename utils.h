@@ -6,7 +6,7 @@ class timer{
     private:
        unsigned long initialTime;
     public:
-       timer(); //costruttore
+       timer(); //constructor
        void startTimer();
        bool checkExpired(int t);
 };
@@ -19,14 +19,7 @@ class output {
        void printNotte();
        void printWelcomeAndDifficulty();
        void printGo();
-       void printDifficulty(int difficulty);
-
-       void printGameOverLCD(int score);
-       void printNewPointLCD(int score);
-       void printNotteLCD();
-       void printWelcomeAndDifficultyLCD();
-       void printGoLCD();
-       void printDifficultyLCD(int difficulty);       
+       void printDifficulty(int difficulty);ss   
 };
 
 #endif
