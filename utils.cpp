@@ -44,35 +44,3 @@ void output::printDifficulty(int difficulty)
   Serial.print("Difficulty set to: ");
   Serial.println(difficulty +1 );
 }
-
-
-//LCD section
-//void output::printGameOverLCD(int score)
-//{
-//  lcd.print("GAME OVER");
-//  lcd.print("Final Score: ");
-//  lcd.print(score);
-//}
-//void output::printNewPointLCD(int score)
-//{
-//  lcd.print("New point! Score: ");
-//  lcd.print(score);
-//}
-//void output::printNotteLCD()
-//{
-//  lcd.print("Notte");
-//}
-//void output::printWelcomeAndDifficultyLCD()
-//{
-//  lcd.print("Welcome to the Catch the Bouncing Led Ball Game. Press Key T1 to Start");
-//  lcd.print("Set difficulty level");
-//}
-//void output::printGoLCD()
-//{
-//  lcd.print("GO!");
-//}
-//void output::printDifficultyLCD(int difficulty)
-//{
-//  lcd.print("Difficulty set to: ");
-//  lcd.print(difficulty +1 );
-//}
