@@ -1,45 +1,38 @@
-#include "utils.h"
+#include "output.h"
 
-timer::timer() {
+
+Output::Output() {
   
 }
-void timer::startTimer() {
-  initialTime = millis();
+
+void Output::initialize() {
+  Serial.begin(9600);
 }
-bool timer::checkExpired(int t) {
-  if(millis() - initialTime >= t) {
-    return true;
-  }
-  return false;
-}
-output::output() {
-  
-}
-void output::printGameOver(int score)
+void Output::printGameOver(int score)
 {
   Serial.println("GAME OVER");
   Serial.print("Final Score: ");
   Serial.println(score);
 }
-void output::printNewPoint(int score)
+void Output::printNewPoint(int score)
 {
   Serial.print("New point! Score: ");
   Serial.println(score);
 }
-void output::printNotte()
+void Output::printNotte()
 {
   Serial.println("Notte");
 }
-void output::printWelcomeAndDifficulty()
+void Output::printWelcomeAndDifficulty()
 {
   Serial.println("Welcome to the Catch the Bouncing Led Ball Game. Press Key T1 to Start");
   Serial.println("Set difficulty level");
 }
-void output::printGo()
+void Output::printGo()
 {
   Serial.println("GO!");
 }
-void output::printDifficulty(int difficulty)
+void Output::printDifficulty(int difficulty)
 {
   Serial.print("Difficulty set to: ");
   Serial.println(difficulty +1 );

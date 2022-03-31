@@ -1,15 +1,13 @@
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef __TIMER_H__
+#define __TIMER_H__
 
-#include <Arduino.h>
-class timer{
+class Timer{
     private:
        unsigned long initialTime;
     public:
-       timer(); //constructor
+       Timer(); //constructor
        void startTimer();
        bool checkExpired(int t);
 };
-
 
 #endif
