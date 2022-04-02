@@ -4,10 +4,10 @@ Timer::Timer() {
   
 }
 void Timer::startTimer() {
-  initialTime = millis();
+  startTime = millis();
 }
 bool Timer::checkExpired(int t) {
-  if(millis() - initialTime >= t) {
+  if(millis() - startTime >= t) {
     return true;
   }
   return false;

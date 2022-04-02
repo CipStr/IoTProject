@@ -1,12 +1,19 @@
 #include "output.h"
 
-
-Output::Output() {
+void Output::initialize(OutputMode mod) {
+  setMode(mod);
+  switch (mod) {
+    case SERIAL_MONITOR:
+      Serial.begin(9600);
+      break;
+    case LCD:
+      break;
+  }
   
 }
 
-void Output::initialize() {
-  Serial.begin(9600);
+void Output::setMode(OutputMode mod) {
+  Output::mode = mod;
 }
 void Output::printGameOver(int score)
 {

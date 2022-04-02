@@ -56,7 +56,7 @@ void startGame() {
   }
 }
 void setup() {
-  Output::initialize();
+  Output::initialize(OutputMode::SERIAL_MONITOR);
   Output::printWelcomeAndDifficulty();
 
   Hardware::initialize(N_GREEN_LEDS, N_RED_LEDS, N_BUTTONS);
